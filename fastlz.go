@@ -26,6 +26,10 @@
 
 package fastlz
 
+import (
+	"math"
+)
+
 /*
  * Always check for bound when decompressing.
  * Generally it is best to leave it defined.
@@ -143,6 +147,9 @@ func Fastlz_decompress(input []byte, length int, output []byte, maxout int) int 
   decompressed using the function fastlz_decompress above.
 */
 func Fastlz_compress_level(level int, input []byte, length int, output []byte) int {
+	if len(output) < int(math.Max(66, float64(length)*1.05)) {
+		return 0
+	}
 	if level == 1 {
 		return fastlz1_compress(input, length, output)
 	}
@@ -153,16 +160,16 @@ func Fastlz_compress_level(level int, input []byte, length int, output []byte) i
 }
 
 func fastlz1_compress(input []byte, length int, output []byte) int {
-	ip := 0
-	ip_bound := length - 2
-	ip_limit := length - 12
-	op := 0
+	var ip uint = 0
+	var ip_bound uint = uint(length - 2)
+	var ip_limit uint = uint(length - 12)
+	var op uint = 0
 
-	var htab [HASH_SIZE]int
-	var hslot int
-	var hval int
+	var htab [HASH_SIZE]uint
+	var hslot uint
+	var hval uint
 
-	var copy int
+	var copy uint
 
 	/* sanity check */
 	if length < 4 {
@@ -198,11 +205,11 @@ func fastlz1_compress(input []byte, length int, output []byte) int {
 
 	/* main loop */
 	for ip < ip_limit {
-		var ref int
-		var distance int
+		var ref uint
+		var distance uint
 
 		/* minimum match length */
-		var len int = 3
+		var len uint = 3
 
 		/* comparison starting-point */
 		anchor := ip
@@ -211,8 +218,8 @@ func fastlz1_compress(input []byte, length int, output []byte) int {
 		// do nothing
 
 		/* find potential match */
-		hval = (int(input[ip]) | int(input[ip+1])<<8)
-		hval ^= (int(input[ip+1]) | int(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
+		hval = (uint(input[ip]) | uint(input[ip+1])<<8)
+		hval ^= (uint(input[ip+1]) | uint(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
 		hval &= HASH_MASK
 
 		hslot = hval
@@ -346,13 +353,13 @@ func fastlz1_compress(input []byte, length int, output []byte) int {
 		}
 
 		/* update the hash at match boundary */
-		hval = (int(input[ip]) | int(input[ip+1])<<8)
-		hval ^= (int(input[ip+1]) | int(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
+		hval = (uint(input[ip]) | uint(input[ip+1])<<8)
+		hval ^= (uint(input[ip+1]) | uint(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
 		hval &= HASH_MASK
 		htab[hval] = ip
 		ip++
-		hval = (int(input[ip]) | int(input[ip+1])<<8)
-		hval ^= (int(input[ip+1]) | int(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
+		hval = (uint(input[ip]) | uint(input[ip+1])<<8)
+		hval ^= (uint(input[ip+1]) | uint(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
 		hval &= HASH_MASK
 		htab[hval] = ip
 		ip++
@@ -397,20 +404,20 @@ func fastlz1_compress(input []byte, length int, output []byte) int {
 		op--
 	}
 
-	return op
+	return int(op)
 }
 
 func fastlz2_compress(input []byte, length int, output []byte) int {
-	ip := 0
-	ip_bound := length - 2
-	ip_limit := length - 12
-	op := 0
+	var ip uint = 0
+	var ip_bound uint = uint(length - 2)
+	var ip_limit uint = uint(length - 12)
+	var op uint = 0
 
-	var htab [HASH_SIZE]int
-	var hslot int
-	var hval int
+	var htab [HASH_SIZE]uint
+	var hslot uint
+	var hval uint
 
-	var copy int
+	var copy uint
 
 	/* sanity check */
 	if length < 4 {
@@ -446,17 +453,17 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 
 	/* main loop */
 	for ip < ip_limit {
-		var ref int
-		var distance int
+		var ref uint
+		var distance uint
 
 		/* minimum match length */
-		var len int = 3
+		var len uint = 3
 
 		/* comparison starting-point */
 		anchor := ip
 
 		/* check for a run */
-		if input[ip] == input[ip-1] && (input[ip-1]|input[ip]<<8) == (input[ip+1]|input[ip+2]<<8) {
+		if input[ip] == input[ip-1] && (uint(input[ip-1])|uint(input[ip])<<8) == (uint(input[ip+1])|uint(input[ip+2])<<8) {
 			distance = 1
 			ip += 3
 			ref = anchor - 1 + 3
@@ -464,8 +471,8 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 		}
 
 		/* find potential match */
-		hval = (int(input[ip]) | int(input[ip+1])<<8)
-		hval ^= (int(input[ip+1]) | int(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
+		hval = (uint(input[ip]) | uint(input[ip+1])<<8)
+		hval ^= (uint(input[ip+1]) | uint(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
 		hval &= HASH_MASK
 
 		hslot = hval
@@ -566,7 +573,7 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 				}
 				break
 			}
-			//ref++
+			ref++
 			ip++
 		}
 		/* if we have copied something, adjust the copy count */
@@ -635,13 +642,13 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 		}
 
 		/* update the hash at match boundary */
-		hval = (int(input[ip]) | int(input[ip+1])<<8)
-		hval ^= (int(input[ip+1]) | int(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
+		hval = (uint(input[ip]) | uint(input[ip+1])<<8)
+		hval ^= (uint(input[ip+1]) | uint(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
 		hval &= HASH_MASK
 		htab[hval] = ip
 		ip++
-		hval = (int(input[ip]) | int(input[ip+1])<<8)
-		hval ^= (int(input[ip+1]) | int(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
+		hval = (uint(input[ip]) | uint(input[ip+1])<<8)
+		hval ^= (uint(input[ip+1]) | uint(input[ip+2])<<8) ^ (hval >> (16 - HASH_LOG))
 		hval &= HASH_MASK
 		htab[hval] = ip
 		ip++
@@ -689,5 +696,5 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 	/* marker for fastlz2 */
 	output[0] |= (1 << 5)
 
-	return op
+	return int(op)
 }

@@ -49,10 +49,11 @@ int main(int argn, char* argv[]) {
     return 0;
 }
 
+const int size = int(RAND_MAX_COUNT * sizeof(float) * 1.05f)+1;
+unsigned char out[size];
+
 void test() {
-    const int size = RAND_MAX_COUNT * sizeof(float)*1.06f;
     {
-        unsigned char out[size];
         int len = fastlz_compress(randValue, RAND_MAX_COUNT * sizeof(float), out);
         int v = 0;
         for (size_t i = 0; i < len; i++) {
@@ -64,7 +65,6 @@ void test() {
     }
 
     {
-        unsigned char out[size];
         int len = fastlz_compress_level(1, randValue, RAND_MAX_COUNT * sizeof(float), out);
         int v = 0;
         for (size_t i = 0; i < len; i++) {
@@ -76,7 +76,6 @@ void test() {
     }
 
     {
-        unsigned char out[size];
         int len = fastlz_compress_level(2, randValue, RAND_MAX_COUNT * sizeof(float), out);
         int v = 0;
         for (size_t i = 0; i < len; i++) {

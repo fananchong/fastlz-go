@@ -16,7 +16,6 @@ func Test_main(t *testing.T) {
 
 	const size = int(RAND_MAX_COUNT * FloatSize * 2)
 	{
-		t.Log("start test Fastlz_compress...")
 		var out [size]byte
 		ln := fastlz.Fastlz_compress(randValueByte[:], len(randValueByte), out[:])
 		Assert(ln != 0)
@@ -28,7 +27,6 @@ func Test_main(t *testing.T) {
 		resultIndex++
 	}
 	{
-		t.Log("start test Fastlz_compress_level#1...")
 		var out [size]byte
 		ln := fastlz.Fastlz_compress_level(1, randValueByte[:], len(randValueByte), out[:])
 		Assert(ln != 0)
@@ -40,7 +38,6 @@ func Test_main(t *testing.T) {
 		resultIndex++
 	}
 	{
-		t.Log("start test Fastlz_compress_level#2...")
 		var out [size]byte
 		ln := fastlz.Fastlz_compress_level(2, randValueByte[:], len(randValueByte), out[:])
 		Assert(ln != 0)
