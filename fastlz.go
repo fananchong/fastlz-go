@@ -28,6 +28,7 @@ package fastlz
 
 import (
 	"math"
+	"unsafe"
 )
 
 /*
@@ -113,14 +114,14 @@ func Fastlz_compress(input []byte, length int, output []byte) int {
 */
 func Fastlz_decompress(input []byte, length int, output []byte, maxout int) int {
 	/* magic identifier for compression level */
-	//	level := ((*(*uint8)(unsafe.Pointer(&input[0]))) >> 5) + 1
+	level := ((*(*uint8)(unsafe.Pointer(&input[0]))) >> 5) + 1
 
-	//	if level == 1 {
-	//		return fastlz1_decompress(input, length, output, maxout)
-	//	}
-	//	if level == 2 {
-	//		return fastlz2_decompress(input, length, output, maxout)
-	//	}
+	if level == 1 {
+		return fastlz1_decompress(input, length, output, maxout)
+	}
+	if level == 2 {
+		return fastlz2_decompress(input, length, output, maxout)
+	}
 	/* unknown level, trigger error */
 	return 0
 }
@@ -695,6 +696,214 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 
 	/* marker for fastlz2 */
 	output[0] |= (1 << 5)
+
+	return int(op)
+}
+
+func fastlz1_decompress(input []byte, length int, output []byte, maxout int) int {
+	var ip uint = 0
+	var ip_limit uint = uint(length)
+	var op uint = 0
+	var op_limit uint = uint(maxout)
+	var ctrl uint = uint(input[ip] & 31)
+	ip++
+	loop := true
+
+	for loop {
+		ref := op
+		len := ctrl >> 5
+		ofs := (ctrl & 31) << 8
+
+		if ctrl >= 32 {
+			len--
+			ref -= ofs
+			if len == 7-1 {
+				len += uint(input[ip])
+				ip++
+			}
+			ref -= uint(input[ip])
+			ip++
+
+			if op+len+3 > op_limit {
+				return 0
+			}
+			if int(ref-1) < 0 {
+				return 0
+			}
+			if ip < ip_limit {
+				ctrl = uint(input[ip])
+				ip++
+			} else {
+				loop = false
+			}
+			if ref == op {
+				/* optimize copy for a run */
+				b := output[ref-1]
+				output[op] = b
+				op++
+				output[op] = b
+				op++
+				output[op] = b
+				op++
+				for ; len != 0; len-- {
+					output[op] = b
+					op++
+				}
+			} else {
+				/* copy from reference */
+				ref--
+
+				output[op] = output[ref]
+				op++
+				ref++
+				output[op] = output[ref]
+				op++
+				ref++
+				output[op] = output[ref]
+				op++
+				ref++
+
+				for ; len != 0; len-- {
+					output[op] = output[ref]
+					op++
+					ref++
+				}
+			}
+		} else {
+			ctrl++
+			if op+ctrl > op_limit {
+				return 0
+			}
+			if ip+ctrl > ip_limit {
+				return 0
+			}
+			output[op] = input[ip]
+			op++
+			ip++
+			for ctrl--; ctrl != 0; ctrl-- {
+				output[op] = input[ip]
+				op++
+				ip++
+			}
+			loop = (ip < ip_limit)
+			if loop {
+				ctrl = uint(input[ip])
+				ip++
+			}
+		}
+	}
+
+	return int(op)
+}
+
+func fastlz2_decompress(input []byte, length int, output []byte, maxout int) int {
+	var ip uint = 0
+	var ip_limit uint = uint(length)
+	var op uint = 0
+	var op_limit uint = uint(maxout)
+	var ctrl uint = uint(input[ip] & 31)
+	ip++
+	loop := true
+
+	for loop {
+		ref := op
+		len := ctrl >> 5
+		ofs := (ctrl & 31) << 8
+
+		if ctrl >= 32 {
+			var code byte
+			len--
+			ref -= ofs
+			if len == 7-1 {
+				code = 255
+				for code == 255 {
+					code = input[ip]
+					ip++
+					len += uint(code)
+				}
+			}
+			code = input[ip]
+			ip++
+			ref -= uint(code)
+
+			/* match from 16-bit distance */
+			if code == 255 {
+				if ofs == (31 << 8) {
+					ofs = uint(input[ip]) << 8
+					ip++
+					ofs += uint(input[ip])
+					ip++
+					ref = op - ofs - MAX_DISTANCE2
+				}
+			}
+			if op+len+3 > op_limit {
+				return 0
+			}
+			if int(ref-1) < 0 {
+				return 0
+			}
+			if ip < ip_limit {
+				ctrl = uint(input[ip])
+				ip++
+			} else {
+				loop = false
+			}
+			if ref == op {
+				/* optimize copy for a run */
+				b := output[ref-1]
+				output[op] = b
+				op++
+				output[op] = b
+				op++
+				output[op] = b
+				op++
+				for ; len != 0; len-- {
+					output[op] = b
+					op++
+				}
+			} else {
+				/* copy from reference */
+				ref--
+
+				output[op] = output[ref]
+				op++
+				ref++
+				output[op] = output[ref]
+				op++
+				ref++
+				output[op] = output[ref]
+				op++
+				ref++
+
+				for ; len != 0; len-- {
+					output[op] = output[ref]
+					op++
+					ref++
+				}
+			}
+		} else {
+			ctrl++
+			if op+ctrl > op_limit {
+				return 0
+			}
+			if ip+ctrl > ip_limit {
+				return 0
+			}
+			output[op] = input[ip]
+			op++
+			ip++
+			for ctrl--; ctrl != 0; ctrl-- {
+				output[op] = input[ip]
+				op++
+				ip++
+			}
+			loop = (ip < ip_limit)
+			if loop {
+				ctrl = uint(input[ip])
+				ip++
+			}
+		}
+	}
 
 	return int(op)
 }

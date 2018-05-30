@@ -25,6 +25,13 @@ func Test_main(t *testing.T) {
 		}
 		Assert(IsEquals(float32(v), resultValue[resultIndex]))
 		resultIndex++
+
+		dec := make([]byte, size)
+		ln2 := fastlz.Fastlz_decompress(out[:], ln, dec, size)
+		Assert(ln2 == RAND_MAX_COUNT*FloatSize)
+		for i := 0; i < RAND_MAX_COUNT*FloatSize; i++ {
+			Assert(dec[i] == randValueByte[i])
+		}
 	}
 	{
 		var out [size]byte
@@ -36,6 +43,13 @@ func Test_main(t *testing.T) {
 		}
 		Assert(IsEquals(float32(v), resultValue[resultIndex]))
 		resultIndex++
+
+		dec := make([]byte, size)
+		ln2 := fastlz.Fastlz_decompress(out[:], ln, dec, size)
+		Assert(ln2 == RAND_MAX_COUNT*FloatSize)
+		for i := 0; i < RAND_MAX_COUNT*FloatSize; i++ {
+			Assert(dec[i] == randValueByte[i])
+		}
 	}
 	{
 		var out [size]byte
@@ -47,5 +61,12 @@ func Test_main(t *testing.T) {
 		}
 		Assert(IsEquals(float32(v), resultValue[resultIndex]))
 		resultIndex++
+
+		dec := make([]byte, size)
+		ln2 := fastlz.Fastlz_decompress(out[:], ln, dec, size)
+		Assert(ln2 == RAND_MAX_COUNT*FloatSize)
+		for i := 0; i < RAND_MAX_COUNT*FloatSize; i++ {
+			Assert(dec[i] == randValueByte[i])
+		}
 	}
 }
