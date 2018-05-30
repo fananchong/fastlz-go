@@ -26,10 +26,6 @@
 
 package fastlz
 
-import (
-	"unsafe"
-)
-
 /*
  * Always check for bound when decompressing.
  * Generally it is best to leave it defined.
@@ -113,14 +109,14 @@ func Fastlz_compress(input []byte, length int, output []byte) int {
 */
 func Fastlz_decompress(input []byte, length int, output []byte, maxout int) int {
 	/* magic identifier for compression level */
-	level := ((*(*uint8)(unsafe.Pointer(&input[0]))) >> 5) + 1
+	//	level := ((*(*uint8)(unsafe.Pointer(&input[0]))) >> 5) + 1
 
-	if level == 1 {
-		return fastlz1_decompress(input, length, output, maxout)
-	}
-	if level == 2 {
-		return fastlz2_decompress(input, length, output, maxout)
-	}
+	//	if level == 1 {
+	//		return fastlz1_decompress(input, length, output, maxout)
+	//	}
+	//	if level == 2 {
+	//		return fastlz2_decompress(input, length, output, maxout)
+	//	}
 	/* unknown level, trigger error */
 	return 0
 }

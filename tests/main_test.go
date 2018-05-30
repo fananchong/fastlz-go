@@ -1,0 +1,54 @@
+package tests
+
+import (
+	"testing"
+	"unsafe"
+
+	fastlz "github.com/fananchong/fastlz-go"
+)
+
+const FloatSize = int(unsafe.Sizeof(float32(1.0)))
+const RAND_MAX_COUNT = 200000
+
+func Test_main(t *testing.T) {
+
+	Assert(len(randValueByte) == RAND_MAX_COUNT*FloatSize)
+
+	const size = int(RAND_MAX_COUNT * FloatSize * 2)
+	{
+		t.Log("start test Fastlz_compress...")
+		var out [size]byte
+		ln := fastlz.Fastlz_compress(randValueByte[:], len(randValueByte), out[:])
+		Assert(ln != 0)
+		v := 0
+		for i := 0; i < ln; i++ {
+			v += int(out[i])
+		}
+		Assert(IsEquals(float32(v), resultValue[resultIndex]))
+		resultIndex++
+	}
+	{
+		t.Log("start test Fastlz_compress_level#1...")
+		var out [size]byte
+		ln := fastlz.Fastlz_compress_level(1, randValueByte[:], len(randValueByte), out[:])
+		Assert(ln != 0)
+		v := 0
+		for i := 0; i < ln; i++ {
+			v += int(out[i])
+		}
+		Assert(IsEquals(float32(v), resultValue[resultIndex]))
+		resultIndex++
+	}
+	{
+		t.Log("start test Fastlz_compress_level#2...")
+		var out [size]byte
+		ln := fastlz.Fastlz_compress_level(2, randValueByte[:], len(randValueByte), out[:])
+		Assert(ln != 0)
+		v := 0
+		for i := 0; i < ln; i++ {
+			v += int(out[i])
+		}
+		Assert(IsEquals(float32(v), resultValue[resultIndex]))
+		resultIndex++
+	}
+}
