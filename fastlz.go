@@ -456,7 +456,7 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 		anchor := ip
 
 		/* check for a run */
-		if input[ip] == input[ip-1] && (input[ip-1]|input[ip]<<8) == (input[ip]|input[ip+1]<<8) {
+		if input[ip] == input[ip-1] && (input[ip-1]|input[ip]<<8) == (input[ip+1]|input[ip+2]<<8) {
 			distance = 1
 			ip += 3
 			ref = anchor - 1 + 3
@@ -483,6 +483,7 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 			input[ref] != input[ip] || input[ref+1] != input[ip+1] || input[ref+2] != input[ip+2] {
 			goto literal
 		}
+
 		/* far, needs at least 5-byte match */
 		if distance >= MAX_DISTANCE2 {
 			if input[ref+3] != input[ip+3] || input[ref+4] != input[ip+4] {
@@ -491,10 +492,11 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 			len += 2
 		}
 
+		ref += len
+
 	match:
 
 		/* last matched byte */
-		ref += len
 		ip = anchor + len
 
 		/* distance is biased */
@@ -564,7 +566,7 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 				}
 				break
 			}
-			ref++
+			//ref++
 			ip++
 		}
 		/* if we have copied something, adjust the copy count */
