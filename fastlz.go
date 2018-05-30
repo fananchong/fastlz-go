@@ -253,55 +253,57 @@ func fastlz1_compress(input []byte, length int, output []byte) int {
 			for {
 				/* safe because the outer check against ip limit */
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 
 				for ip < ip_bound {
 					if input[ref] != input[ip] {
-						ref++
-						ip++
 						break
 					}
+					ref++
+					ip++
 				}
 				break
 			}
+			ref++
+			ip++
 		}
 		/* if we have copied something, adjust the copy count */
 		if copy != 0 {
@@ -377,7 +379,7 @@ func fastlz1_compress(input []byte, length int, output []byte) int {
 	/* left-over as literal copy */
 	ip_bound++
 	for ip <= ip_bound {
-		output[op] = output[ip]
+		output[op] = input[ip]
 		op++
 		ip++
 		copy++
@@ -513,55 +515,57 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 			for {
 				/* safe because the outer check against ip limit */
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 				if input[ref] != input[ip] {
-					ref++
-					ip++
 					break
 				}
+				ref++
+				ip++
 
 				for ip < ip_bound {
 					if input[ref] != input[ip] {
-						ref++
-						ip++
 						break
 					}
+					ref++
+					ip++
 				}
 				break
 			}
+			ref++
+			ip++
 		}
 		/* if we have copied something, adjust the copy count */
 		if copy != 0 {
@@ -662,7 +666,7 @@ func fastlz2_compress(input []byte, length int, output []byte) int {
 	/* left-over as literal copy */
 	ip_bound++
 	for ip <= ip_bound {
-		output[op] = output[ip]
+		output[op] = input[ip]
 		op++
 		ip++
 		copy++
