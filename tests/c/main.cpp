@@ -49,8 +49,9 @@ int main(int argn, char* argv[]) {
     return 0;
 }
 
-const int size = int(RAND_MAX_COUNT * sizeof(float) * 1.05f)+1;
+const int size = int(RAND_MAX_COUNT * sizeof(float) * 1.05f) + 1;
 unsigned char out[size];
+float dec[RAND_MAX_COUNT];
 
 void test() {
     {
@@ -62,6 +63,11 @@ void test() {
         outValue[outIndex++] = float(v);
         printf("len: %d\n", len);
         printf("v:%d, outValue: %f\n", v, float(v));
+        int l2 = fastlz_decompress(out, len, dec, RAND_MAX_COUNT * sizeof(float));
+        assert(l2 == RAND_MAX_COUNT * sizeof(float));
+        for (size_t i = 0; i < RAND_MAX_COUNT; i++) {
+            assert(dec[i] == randValue[i]);
+        }
     }
 
     {
@@ -73,6 +79,11 @@ void test() {
         outValue[outIndex++] = float(v);
         printf("len: %d\n", len);
         printf("v:%d, outValue: %f\n", v, float(v));
+        int l2 = fastlz_decompress(out, len, dec, RAND_MAX_COUNT * sizeof(float));
+        assert(l2 == RAND_MAX_COUNT * sizeof(float));
+        for (size_t i = 0; i < RAND_MAX_COUNT; i++) {
+            assert(dec[i] == randValue[i]);
+        }
     }
 
     {
@@ -84,5 +95,12 @@ void test() {
         outValue[outIndex++] = float(v);
         printf("len: %d\n", len);
         printf("v:%d, outValue: %f\n", v, float(v));
+        int l2 = fastlz_decompress(out, len, dec, RAND_MAX_COUNT * sizeof(float));
+        assert(l2 == RAND_MAX_COUNT * sizeof(float));
+        for (size_t i = 0; i < RAND_MAX_COUNT; i++) {
+            assert(dec[i] == randValue[i]);
+        }
     }
+
+
 }

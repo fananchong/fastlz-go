@@ -31,7 +31,7 @@ project "ctest"
         "../main.cpp",
         "../Contrib/fastlz/**",
     }
---[[    
+    
 project "cbenchmark"
     kind "ConsoleApp"
     targetname "cbenchmark"
@@ -40,4 +40,3 @@ project "cbenchmark"
         "../benchmark.cpp",
         "../Contrib/fastlz/**",
     }
-]]--

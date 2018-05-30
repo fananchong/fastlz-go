@@ -48,11 +48,12 @@ func brand() byte {
 
 func initRandDataByte() {
 	tempdata, err := ioutil.ReadFile("rand.bin")
-	Assert(err == nil)
-	sliceHeader := (*reflect.SliceHeader)((unsafe.Pointer(&randValueByte)))
-	sliceHeader.Cap = int(len(tempdata) / int(unsafe.Sizeof(byte(1))))
-	sliceHeader.Len = int(len(tempdata) / int(unsafe.Sizeof(byte(1))))
-	sliceHeader.Data = uintptr(unsafe.Pointer(&(tempdata[0])))
+	if err == nil {
+		sliceHeader := (*reflect.SliceHeader)((unsafe.Pointer(&randValueByte)))
+		sliceHeader.Cap = int(len(tempdata) / int(unsafe.Sizeof(byte(1))))
+		sliceHeader.Len = int(len(tempdata) / int(unsafe.Sizeof(byte(1))))
+		sliceHeader.Data = uintptr(unsafe.Pointer(&(tempdata[0])))
+	}
 }
 
 ///  result data (type float)
@@ -61,11 +62,12 @@ var resultIndex = 0
 
 func initResultData() {
 	tempdata, err := ioutil.ReadFile("result.bin")
-	Assert(err == nil)
-	sliceHeader := (*reflect.SliceHeader)((unsafe.Pointer(&resultValue)))
-	sliceHeader.Cap = int(len(tempdata) / int(unsafe.Sizeof(float32(1.0))))
-	sliceHeader.Len = int(len(tempdata) / int(unsafe.Sizeof(float32(1.0))))
-	sliceHeader.Data = uintptr(unsafe.Pointer(&(tempdata[0])))
+	if err == nil {
+		sliceHeader := (*reflect.SliceHeader)((unsafe.Pointer(&resultValue)))
+		sliceHeader.Cap = int(len(tempdata) / int(unsafe.Sizeof(float32(1.0))))
+		sliceHeader.Len = int(len(tempdata) / int(unsafe.Sizeof(float32(1.0))))
+		sliceHeader.Data = uintptr(unsafe.Pointer(&(tempdata[0])))
+	}
 }
 
 func init() {

@@ -1,6 +1,6 @@
+#include "Contrib/fastlz/fastlz.h"
 #include <chrono>
 #include <cassert>
-#include "detour.h"
 #include <stdio.h>
 
 long long get_tick_count(void)
@@ -10,78 +10,43 @@ long long get_tick_count(void)
     return tp.time_since_epoch().count();
 }
 
+const int RAND_MAX_COUNT = 200000 * sizeof(float);
+char randValue[RAND_MAX_COUNT];
 
-const int RAND_MAX_COUNT = 200000;
-float randPosValue[RAND_MAX_COUNT * 4];
-int randPosIndex = 0;
-inline void getPos(dtPolyRef& ref, float pos[3])
-{
-    ref = dtPolyRef(randPosValue[randPosIndex * 4 + 0]);
-    pos[0] = randPosValue[randPosIndex * 4 + 1];
-    pos[1] = randPosValue[randPosIndex * 4 + 2];
-    pos[2] = randPosValue[randPosIndex * 4 + 3];
-    randPosIndex++;
-}
+const int count = 10000;
 
-const int PATH_MAX_NODE = 2048;
-const char* MESH_FILE = "../../nav_test.obj.tile.bin";
+char out[count][4096 * 2];
+int outLen[count];
+char dec[count][4096 * 2];
 
 int main() {
-    FILE* f1 = fopen("../../randpos.bin", "rb");
-    fread(randPosValue, RAND_MAX_COUNT * 4 * sizeof(float), 1, f1);
+    FILE* f1 = fopen("../../rand.bin", "rb");
+    fread(randValue, RAND_MAX_COUNT, 1, f1);
     fclose(f1);
 
-
-    int errCode;
-    auto mesh = LoadStaticMesh(MESH_FILE, errCode);
-    assert(errCode == 0);
-    auto query = CreateQuery(mesh, 2048);
-    assert(query != nullptr);
-    auto filter = dtQueryFilter();
-
-    int count = RAND_MAX_COUNT / 2;
+    int dataLen[] = { 4096,128,512,1024,4096 };
     printf("total count: %d\n", count);
 
-    auto t1 = get_tick_count();
-    for (int i = 0; i < count; i++)
+    for (size_t k = 0; k < sizeof(dataLen) / sizeof(dataLen[0]); k++)
     {
-        dtStatus stat;
-        float halfExtents[3] = { 2, 4, 2 };
-        float startPos[3] = { 0,0,0 };
-        float endPos[3] = { 0,0,0 };
-        dtPolyRef startRef = 0;
-        dtPolyRef endRef = 0;
-        getPos(startRef, startPos);
-        getPos(endRef, endPos);
-        dtPolyRef path[PATH_MAX_NODE];
-        int pathCount = 0;
-        stat = query->findPath(startRef, endRef, startPos, endPos, &filter, path, &pathCount, PATH_MAX_NODE);
-        assert(dtStatusSucceed(stat));
-    }
-    auto t2 = get_tick_count();
-    printf("findPath cost:        %20lldns %20.3fns/op %20.3fms/op\n",
-        t2 - t1, float(t2 - t1) / count, float(t2 - t1) / count / 1000000);
+        printf("data size:           %20dbyte\n", dataLen[k]);
 
-    randPosIndex = 0;
-    t1 = get_tick_count();
-    for (int i = 0; i < count; i++)
-    {
-        dtStatus stat;
-        float halfExtents[3] = { 2, 4, 2 };
-        float startPos[3] = { 0,0,0 };
-        float endPos[3] = { 0,0,0 };
-        dtPolyRef startRef = 0;
-        dtPolyRef endRef = 0;
-        getPos(startRef, startPos);
-        getPos(endRef, endPos);
-        float resultPos[3] = { 0,0,0 };
-        dtPolyRef visited[PATH_MAX_NODE];
-        int visitedCount = 0;
-        bool bHit = false;
-        stat = query->moveAlongSurface(startRef, startPos, endPos, &filter, resultPos, visited, &visitedCount, PATH_MAX_NODE, bHit);
-        assert(dtStatusSucceed(stat));
+        auto t1 = get_tick_count();
+        for (int i = 0; i < count; i++) {
+            outLen[i] = fastlz_compress(randValue + i, dataLen[k], out[i]);
+            assert(outLen[i] != 0);
+        }
+        auto t2 = get_tick_count();
+        printf("compress cost:        %20lldns %20.3fns/op %20.3fms/op\n",
+            t2 - t1, float(t2 - t1) / count, float(t2 - t1) / count / 1000000);
+
+        t1 = get_tick_count();
+        for (int i = 0; i < count; i++) {
+            int ln = fastlz_decompress(out[i], outLen[i], dec[i], sizeof(dec) / sizeof(dec[0]));
+            assert(ln != 0);
+        }
+        t2 = get_tick_count();
+        printf("decompress cost:      %20lldns %20.3fns/op %20.3fms/op\n",
+            t2 - t1, float(t2 - t1) / count, float(t2 - t1) / count / 1000000);
     }
-    t2 = get_tick_count();
-    printf("moveAlongSurface cost:%20lldns %20.3fns/op %20.3fms/op\n",
-        t2 - t1, float(t2 - t1) / count, float(t2 - t1) / count / 1000000);
 }
